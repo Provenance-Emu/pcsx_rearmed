@@ -16,3 +16,4 @@ obj/
 # Switch
 *.d
 .vscode/ipch/*
+.DS_Store
