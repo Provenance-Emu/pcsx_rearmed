@@ -27,7 +27,7 @@
 #include "../plugins/cdrcimg/cdrcimg.h"
 #include "../plugins/dfsound/spu_config.h"
 #include "arm_features.h"
-#include "revision.h"
+//#include "revision.h"
 
 #if defined(__has_builtin)
 #define DO_CPU_CHECKS __has_builtin(__builtin_cpu_init)
@@ -467,7 +467,7 @@ int emu_core_preinit(void)
 
 int emu_core_init(void)
 {
-	SysPrintf("Starting PCSX-ReARMed " REV "\n");
+	SysPrintf("Starting PCSX-ReARMed Provenance Edition\n");
 
 #ifndef NO_FRONTEND
 	check_profile();

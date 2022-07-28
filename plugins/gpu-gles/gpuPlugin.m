@@ -25,6 +25,7 @@
 //*************************************************************************// 
 
 //#include "gpuStdafx.h"
+#import "PVPCSXRearmedCore.h"
 
 //#include <mmsystem.h>
 #define _IN_GPU
@@ -2654,5 +2655,7 @@ void CALLBACK GPUrearmedCallbacks(const void **cbs)
 
 static void flipEGL(void)
 {
- eglSwapBuffers(display, surface);
+    GET_CURRENT_OR_RETURN();
+    [current swapBuffers];
+// eglSwapBuffers(display, surface);
 }

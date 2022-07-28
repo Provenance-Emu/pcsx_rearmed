@@ -66,9 +66,14 @@ extern "C" {
 #ifdef SOFT_LINKAGE
 #pragma softfp_linkage
 #endif
-#include <GLES/gl.h> // for opengl es types 
+#include <OpenGLES/gltypes.h>
+#include <OpenGLES/OpenGLESAvailability.h>
+#include <OpenGLES/ES3/gl.h>
+#include <OpenGLES/ES3/glext.h>
+#import <OpenGLES/EAGL.h>
+
 //#include <GLES/egltypes.h>
-#include <EGL/egl.h>
+//#include <EGL/egl.h>
 #ifdef SOFT_LINKAGE
 #pragma no_softfp_linkage
 #endif

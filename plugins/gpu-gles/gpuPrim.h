@@ -34,10 +34,10 @@ extern "C" {
 #include "gpuExternals.h"
 #include "gpuStdafx.h"
 
-#ifndef _WINDOWS
-extern EGLSurface surface;
-extern EGLDisplay display;
-#endif
+//#ifndef _WINDOWS
+//extern EGLSurface surface;
+//extern EGLDisplay display;
+//#endif
 
 void UploadScreen (long Position);
 void PrepareFullScreenUpload (long Position);

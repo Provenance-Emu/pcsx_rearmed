@@ -36,7 +36,7 @@
 #include "plugin.h"
 #include "plugin_lib.h"
 #include "arm_features.h"
-#include "revision.h"
+//#include "revision.h"
 
 #include <libretro.h>
 #include "libretro_core_options.h"

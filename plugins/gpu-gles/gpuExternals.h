@@ -37,8 +37,12 @@ extern "C" {
 #include <gl/gl.h>
 #include <gl/egl.h>
 #else
-#include <GLES/gl.h>
-#include <GLES/glext.h>
+//#include <OpenGLES/gltypes.h>
+#include <OpenGLES/ES1/gl.h>
+#include <OpenGLES/ES1/glext.h>
+#import <OpenGLES/EAGL.h>
+//#include <GLES/gl.h>
+//#include <GLES/glext.h>
 #endif
 
 #ifndef GL_BGRA_EXT
