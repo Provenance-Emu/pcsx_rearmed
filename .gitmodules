@@ -1,3 +1,5 @@
 [submodule "frontend/libpicofe"]
 	path = frontend/libpicofe
 	url = https://github.com/notaz/libpicofe.git
+[submodule "deps/lightning/gnulib"]
+	path = deps/lightning/gnulib
