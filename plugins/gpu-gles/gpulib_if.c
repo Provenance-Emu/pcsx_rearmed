@@ -125,7 +125,7 @@ void updateDisplay(void)
  if(iDrawnSomething)
  {
   fps_update();
-  eglSwapBuffers(display, surface);
+//  glSwapBuffers(display, surface);
   iDrawnSomething=0;
  }
 
@@ -189,8 +189,8 @@ void updateFrontDisplay(void)
  bFakeFrontBuffer=FALSE;
  bRenderFrontBuffer=FALSE;
 
- if(iDrawnSomething)                                  // linux:
-  eglSwapBuffers(display, surface);
+// if(iDrawnSomething)                                  // linux:
+//  eglSwapBuffers(display, surface);
 }
 
 static void ChangeDispOffsetsX(void)                  // CENTER X

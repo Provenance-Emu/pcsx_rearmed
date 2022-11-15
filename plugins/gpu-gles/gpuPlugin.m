@@ -27,6 +27,12 @@
 //#include "gpuStdafx.h"
 #import "PVPCSXRearmedCore.h"
 
+#include "gpuTexture.c"
+#include "gpuPrim.c"
+#include "hud.c"
+#include "gpuDraw.c"
+
+
 //#include <mmsystem.h>
 #define _IN_GPU
 
@@ -66,7 +72,7 @@ int           iTileCheat=0;
 
 unsigned char  *psxVSecure;
 unsigned char  *psxVub;
-signed   char  *psxVsb;
+char  *psxVsb;
 unsigned short *psxVuw;
 unsigned short *psxVuw_eom;
 signed   short *psxVsw;
@@ -568,7 +574,7 @@ void PaintBlackBorders(void)
 // helper to draw scanlines
 ////////////////////////////////////////////////////////////////////////
 
-__inline void XPRIMdrawTexturedQuad(OGLVertex* vertex1, OGLVertex* vertex2, 
+static inline void XPRIMdrawTexturedQuad(OGLVertex* vertex1, OGLVertex* vertex2,
                                     OGLVertex* vertex3, OGLVertex* vertex4) 
 {
 
@@ -1447,7 +1453,7 @@ switch(lCommand)
 
 BOOL bNeedWriteUpload=FALSE;
 
-__inline void FinishedVRAMWrite(void)
+static INLINE void FinishedVRAMWrite(void)
 {
  if(bNeedWriteUpload)
   {
@@ -1463,7 +1469,7 @@ __inline void FinishedVRAMWrite(void)
  VRAMWrite.RowsRemaining = 0;
 }
 
-__inline void FinishedVRAMRead(void)
+static inline void FinishedVRAMRead(void)
 {
  // set register to NORMAL operation
  iDataReadMode = DR_NORMAL;
@@ -2163,7 +2169,8 @@ void SetFixes(void)
 
 unsigned long lUsedAddr[3];
 
-__inline BOOL CheckForEndlessLoop(unsigned long laddr)
+static inline BOOL CheckForEndlessLoop(unsigned long laddr)
+//__inline BOOL CheckForEndlessLoop(unsigned long laddr)
 {
 if(laddr==lUsedAddr[1]) return TRUE;
 if(laddr==lUsedAddr[2]) return TRUE;
@@ -2602,6 +2609,7 @@ long CALLBACK GPUgetScreenPic(unsigned char * pMem)
    pf+=127*3;
   }
 
+    return pf;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -2611,6 +2619,7 @@ long CALLBACK GPUshowScreenPic(unsigned char * pMem)
 // DestroyPic();
 // if(pMem==0) return;
 // CreatePic(pMem);
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -2658,4 +2667,11 @@ static void flipEGL(void)
     GET_CURRENT_OR_RETURN();
     [current swapBuffers];
 // eglSwapBuffers(display, surface);
+}
+
+static void renderer_sync(void)
+{
+}
+static void renderer_notify_update_lace(int updated)
+{
 }
