@@ -24,23 +24,60 @@
 #include "assem_arm64.h"
 #include "linkage_offsets.h"
 
+#ifdef __MACH__
+#define dynarec_local        ESYM(dynarec_local)
+#define ndrc_add_jump_out    ESYM(ndrc_add_jump_out)
+#define ndrc_try_restore_block    ESYM(ndrc_try_restore_block)
+#define ndrc_get_addr_ht    ESYM(ndrc_get_addr_ht)
+#define ndrc_get_addr_ht_param    ESYM(ndrc_get_addr_ht_param)
+#define ndrc_write_invalidate_one ESYM(ndrc_write_invalidate_one)
+#define gen_interupt        ESYM(gen_interupt)
+#define gteCheckStallRaw    ESYM(gteCheckStallRaw)
+#define psxException        ESYM(psxException)
+#endif
+
 #if (LO_mem_wtab & 7)
 #error misligned pointers
 #endif
 
+#define GLOBAL_FUNCTION(name)  \
+    .globl name;               \
+    .hidden name;              \
+    name
+
+#define LOCAL_FUNCTION(name)  \
+    .hidden name;             \
+    name
+
+#define GLOBAL_VARIABLE(name, size_) \
+    .globl name;                    \
+    .hidden name;
+
+#define FUNC(name) \
+    .globl _##name; \
+name:
+
+/*
+    .globl _cc_interrupt;
+ _cc_interrupt:
+ */
+
 .bss
 	.align	4
-	.global dynarec_local
-	.type	dynarec_local, %object
-	.size	dynarec_local, LO_dynarec_local_size
+	.globl dynarec_local
+
+    // .type	dynarec_local, %object
+	 // .size	dynarec_local, LO_dynarec_local_size
+
 dynarec_local:
 	.space	LO_dynarec_local_size
 
 #define DRC_VAR_(name, vname, size_) \
 	vname = dynarec_local + LO_##name; \
-	.global vname; \
-	.type	vname, %object; \
-	.size	vname, size_
+	.glo vname;
+
+//    .type	vname, %object; \
+  //  .size	vname, size_
 
 #define DRC_VAR(name, size_) \
 	DRC_VAR_(name, ESYM(name), size_)
@@ -84,15 +121,16 @@ DRC_VAR(mini_ht, 256)
 	.text
 	.align	2
 
-FUNCTION(dyna_linker):
+dyna_linker:
 	/* r0 = virtual target address */
 	/* r1 = instruction to patch */
 	bl	ndrc_get_addr_ht
 	br	x0
-	.size	dyna_linker, .-dyna_linker
+	 // .size	dyna_linker, .-dyna_linker
 
 	.align	2
-FUNCTION(cc_interrupt):
+    .globl _cc_interrupt;
+_cc_interrupt:
 	ldr	w0, [rFP, #LO_last_count]
 	add	rCC, w0, rCC
 	str	wzr, [rFP, #LO_pending_exception]
@@ -115,10 +153,10 @@ FUNCTION(cc_interrupt):
 	ldr	w0, [rFP, #LO_pcaddr]
 	bl	ndrc_get_addr_ht
 	br	x0
-	.size	cc_interrupt, .-cc_interrupt
+	 // .size	cc_interrupt, .-cc_interrupt
 
 	.align	2
-FUNCTION(fp_exception):
+FUNC(fp_exception):
 	mov	w2, #0x10000000
 0:
 	ldr	w1, [rFP, #LO_reg_cop0+48] /* Status */
@@ -131,27 +169,27 @@ FUNCTION(fp_exception):
 	add	w0, w3, #0x80
 	bl	ndrc_get_addr_ht
 	br	x0
-	.size	fp_exception, .-fp_exception
+	 // .size	fp_exception, .-fp_exception
 	.align	2
-FUNCTION(fp_exception_ds):
+fp_exception_ds:
 	mov	w2, #0x90000000 /* Set high bit if delay slot */
 	b	0b
-	.size	fp_exception_ds, .-fp_exception_ds
+	 // .size	fp_exception_ds, .-fp_exception_ds
 
 	.align	2
-FUNCTION(jump_break_ds):
+jump_break_ds:
 	mov	w0, #0x24
 	mov	w1, #1
 	b	call_psxException
-FUNCTION(jump_break):
+jump_break:
 	mov	w0, #0x24
 	mov	w1, #0
 	b	call_psxException
-FUNCTION(jump_syscall_ds):
+jump_syscall_ds:
 	mov	w0, #0x20
 	mov	w1, #1
 	b	call_psxException
-FUNCTION(jump_syscall):
+jump_syscall:
 	mov	w0, #0x20
 	mov	w1, #0
 
@@ -164,7 +202,7 @@ call_psxException:
 
 	/* note: psxException might do recursive recompiler call from it's HLE code,
 	 * so be ready for this */
-FUNCTION(jump_to_new_pc):
+jump_to_new_pc:
 	ldr	w1, [rFP, #LO_next_interupt]
 	ldr	rCC, [rFP, #LO_cycle]
 	ldr	w0, [rFP, #LO_pcaddr]
@@ -172,11 +210,11 @@ FUNCTION(jump_to_new_pc):
 	str	w1, [rFP, #LO_last_count]
 	bl	ndrc_get_addr_ht
 	br	x0
-	.size	jump_to_new_pc, .-jump_to_new_pc
+	 // .size	jump_to_new_pc, .-jump_to_new_pc
 
 	/* stack must be aligned by 16, and include space for save_regs() use */
 	.align	2
-FUNCTION(new_dyna_start):
+new_dyna_start:
 	stp	x29, x30, [sp, #-SSP_ALL]!
 	ldr	w1,  [x0, #LO_next_interupt]
 	ldr	w2,  [x0, #LO_cycle]
@@ -191,10 +229,10 @@ FUNCTION(new_dyna_start):
 	sub	rCC, w2, w1
 	bl	ndrc_get_addr_ht
 	br	x0
-	.size	new_dyna_start, .-new_dyna_start
+	 // .size	new_dyna_start, .-new_dyna_start
 
 	.align	2
-FUNCTION(new_dyna_leave):
+new_dyna_leave:
 	ldr	w0,  [rFP, #LO_last_count]
 	add	rCC, rCC, w0
 	str	rCC, [rFP, #LO_cycle]
@@ -205,7 +243,7 @@ FUNCTION(new_dyna_leave):
 	ldp	x27, x28, [sp, #16*5]
 	ldp	x29, x30, [sp], #SSP_ALL
 	ret
-	.size	new_dyna_leave, .-new_dyna_leave
+	 // .size	new_dyna_leave, .-new_dyna_leave
 
 /* --------------------------------------- */
 
@@ -225,47 +263,47 @@ FUNCTION(new_dyna_leave):
 	sub	w0, w2, w0
 .endm
 
-FUNCTION(do_memhandler_pre):
+do_memhandler_pre:
 	memhandler_pre
 	ret
 
-FUNCTION(do_memhandler_post):
+do_memhandler_post:
 	memhandler_post
 	ret
 
 .macro pcsx_read_mem readop tab_shift
 	/* w0 = address, x1 = handler_tab, w2 = cycles */
-	ubfm	w4, w0, #\tab_shift, #11
+	ubfm	w4, w0, \tab_shift, #11
 	ldr	x3, [x1, w4, uxtw #3]
 	adds	x3, x3, x3
 	bcs	0f
-	\readop	w0, [x3, w4, uxtw #\tab_shift]
+	\readop	w0, [x3, w4, uxtw \tab_shift]
 	ret
 0:
-	stp	xzr, x30, [sp, #-16]!
+	stp	xzr, x30, [sp, -16]!
 	memhandler_pre
 	blr	x3
 .endm
 
-FUNCTION(jump_handler_read8):
+jump_handler_read8:
 	add     x1, x1, #0x1000/4*8 + 0x1000/2*8  /* shift to r8 part */
 	pcsx_read_mem ldrb, 0
 	b	handler_read_end
 
-FUNCTION(jump_handler_read16):
+jump_handler_read16:
 	add     x1, x1, #0x1000/4*8               /* shift to r16 part */
 	pcsx_read_mem ldrh, 1
 	b	handler_read_end
 
-FUNCTION(jump_handler_read32):
+jump_handler_read32:
 	pcsx_read_mem ldr, 2
 
 handler_read_end:
 	ldp	xzr, x30, [sp], #16
 	ret
 
-.macro pcsx_write_mem wrtop movop tab_shift
-	/* w0 = address, w1 = data, w2 = cycles, x3 = handler_tab */
+.macro pcsx_write_mem wrtop, movop, tab_shift
+	/* w0 = address,f w1 = data, w2 = cycles, x3 = handler_tab */
 	ubfm	w4, w0, #\tab_shift, #11
 	ldr	x3, [x3, w4, uxtw #3]
 	adds	x3, x3, x3
@@ -279,27 +317,27 @@ handler_read_end:
 	\movop	w0, w1
 	memhandler_pre
 	blr	x3
-.endm
+.endmacro
 
-FUNCTION(jump_handler_write8):
+jump_handler_write8:
 	add     x3, x3, #0x1000/4*8 + 0x1000/2*8  /* shift to r8 part */
-	pcsx_write_mem strb uxtb 0
+	pcsx_write_mem strb, uxtb, 0
 	b	handler_write_end
 
-FUNCTION(jump_handler_write16):
+jump_handler_write16:
 	add     x3, x3, #0x1000/4*8               /* shift to r16 part */
-	pcsx_write_mem strh uxth 1
+	pcsx_write_mem strh, uxth, 1
 	b	handler_write_end
 
-FUNCTION(jump_handler_write32):
-	pcsx_write_mem str mov 2
+jump_handler_write32:
+	pcsx_write_mem str, mov, 2
 
 handler_write_end:
 	memhandler_post
 	ldp	xzr, x30, [sp], #16
 	ret
 
-FUNCTION(jump_handle_swl):
+jump_handle_swl:
 	/* w0 = address, w1 = data, w2 = cycles */
 	ldr	x3, [rFP, #LO_mem_wtab]
 	orr	w4, wzr, w0, lsr #12
@@ -334,7 +372,7 @@ FUNCTION(jump_handle_swl):
 	bl	abort
 	ret
 
-FUNCTION(jump_handle_swr):
+jump_handle_swr:
 	/* w0 = address, w1 = data, w2 = cycles */
 	ldr	x3, [rFP, #LO_mem_wtab]
 	orr	w4, wzr, w0, lsr #12
@@ -366,7 +404,7 @@ FUNCTION(jump_handle_swr):
 	bl	abort
 	ret
 
-FUNCTION(call_gteStall):
+call_gteStall:
 	/* w0 = op_cycles, w1 = cycles */
 	ldr	w2, [rFP, #LO_last_count]
 	str	lr, [rFP, #LO_saved_lr]

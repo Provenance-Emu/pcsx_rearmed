@@ -22,6 +22,8 @@
 
 #include "pcnt.h"
 #include "arm_features.h"
+#include <sys/types.h>
+#include <mach/arm/asm.h>
 
 void do_memhandler_pre();
 void do_memhandler_post();
