@@ -25,7 +25,11 @@
 //*************************************************************************// 
 
 //#include "gpuStdafx.h"
-#import "PVPCSXRearmedCore.h"
+//#import "PVPCSXRearmedCore.h"
+
+#import <PVCoreBridgeRetro/PVLibRetroCore.h>
+
+#define GET_CURRENT_OR_RETURN(...)  __strong __typeof__(_current) current = _current; if(current == nil) return __VA_ARGS__;
 
 #include "gpuTexture.c"
 #include "gpuPrim.c"
@@ -1453,7 +1457,7 @@ switch(lCommand)
 
 BOOL bNeedWriteUpload=FALSE;
 
-static INLINE void FinishedVRAMWrite(void)
+static __inline void FinishedVRAMWrite(void)
 {
  if(bNeedWriteUpload)
   {
