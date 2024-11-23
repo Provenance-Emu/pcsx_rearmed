@@ -152,9 +152,8 @@ void GetExtInfos(void)
 {
  BOOL bPacked=FALSE;                                   // default: no packed pixel support
 
- if(strstr((char *)glGetString(GL_EXTENSIONS),         // packed pixels available?
-    "GL_EXT_packed_pixels"))                          
-  bPacked=TRUE;                                        // -> ok
+ const GLubyte* extensions = glGetString(GL_EXTENSIONS);
+ bPacked = (extensions != NULL && strstr((const char*)extensions, "GL_EXT_packed_pixels") != NULL);
 
  
  iClampType=GL_CLAMP_TO_EDGE;
