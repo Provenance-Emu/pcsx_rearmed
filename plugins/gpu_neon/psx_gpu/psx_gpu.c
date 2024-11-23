@@ -541,8 +541,9 @@ void flush_render_block_buffer(psx_gpu_struct *psx_gpu)
   y##set##_b.e[1] = vertex->b                                                  \
   
 
-void compute_all_gradients(psx_gpu_struct *psx_gpu, vertex_struct *a,
- vertex_struct *b, vertex_struct *c)
+void compute_all_gradients(psx_gpu_struct * __restrict__ psx_gpu,
+ const vertex_struct * __restrict__ a, const vertex_struct * __restrict__ b,
+ const vertex_struct * __restrict__ c)
 {
   u32 triangle_area = psx_gpu->triangle_area;
   u32 winding_mask_scalar;

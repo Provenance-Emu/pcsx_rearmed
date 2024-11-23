@@ -21,6 +21,11 @@
 #include "gpuPrim.c"
 #include "hud.c"
 
+#import <PVCoreBridgeRetro/PVLibRetroCore.h>
+
+#define GET_CURRENT_OR_RETURN(...)  __strong __typeof__(_current) current = _current; if(current == nil) return __VA_ARGS__;
+
+
 static const short dispWidths[8] = {256,320,512,640,368,384,512,640};
 short g_m1,g_m2,g_m3;
 short DrawSemiTrans;
@@ -191,6 +196,12 @@ void updateFrontDisplay(void)
 
 // if(iDrawnSomething)                                  // linux:
 //  eglSwapBuffers(display, surface);
+    
+    /// Provenance
+    if(iDrawnSomething) {
+        GET_CURRENT_OR_RETURN();
+        [current swapBuffers];
+    }
 }
 
 static void ChangeDispOffsetsX(void)                  // CENTER X
